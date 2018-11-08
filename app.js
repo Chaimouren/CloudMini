@@ -34,6 +34,9 @@ App({
     })
   },
   globalData: {
-    userInfo: null
+    userInfo: null,
+    access_token:'',
+    register_token:'',
+    kaptcha:''
   }
 })
