@@ -1,6 +1,6 @@
 //host config
 
-const host = 'http://localhost:8080/cloud';
+const host = '';
 
 const config = {
     host

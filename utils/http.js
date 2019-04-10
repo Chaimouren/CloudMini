@@ -1,5 +1,6 @@
 //http 
 const config = require('../config/config.js');
+const media = require('../utils/media.js');
 const app = getApp();
 
 //base http 
@@ -7,7 +8,7 @@ const http = ({
   url = '',
   method = {},
   data = {},
-  header = {} //default content application/json;charset=UTF-8
+  header = {} //default contentType -> application/json;charset=UTF-8
 } = {}) => {
 
   let timeStart = Date.now();
@@ -20,7 +21,6 @@ const http = ({
       method,
       header,
       complete: (res) => {
-        //打印 堆栈
         console.log('[HTTP] >>>');
         console.log('[HTTP url] : ' + getURL(url));
         console.log("[HTTP method] : " + JSON.stringify(method));
@@ -44,7 +44,6 @@ const get = (url, data, header) => {
     url,
     method: 'get',
     data: data,
-    header
   })
 }
 
@@ -74,124 +73,50 @@ const del = (url, data, header) => {
     header
   })
 }
-
-//method delete content can't be xxxform
-const xxxform = {
-  'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-};
-
-const xget = (url, data) => {
-  return http({
-    url,
-    method: 'get',
-    data,
-    header: xxxform
-  })
-}
-const xpost = (url, data) => {
-  return http({
-    url,
-    method: 'post',
-    data,
-    header: xxxform
-  })
-}
-const xput = (url, data) => {
-  return http({
-    url,
-    method: 'put',
-    data,
-    header: xxxform
-  })
-}
-
 //access + xxx-form method 
 const access = {
   access_token: app.globalData.access_token
 }
 
-const axget = (url, data) => {
-  return http({
-    url,
-    method: 'get',
-    data,
-    header: extend(xxxform, access)
-  })
-}
-const axpost = (url, data) => {
-  return http({
-    url,
-    method: 'post',
-    data,
-    header: extend(xxxform, access)
-  })
-}
-const axput = (url, data) => {
-  return http({
-    url,
-    method: 'put',
-    data,
-    header: extend(xxxform, access)
-  })
-}
-
-//access json method
-const ajget = (url, data) => {
-  return http({
-    url,
-    method: 'get',
-    data,
-    header: access
-  })
-}
-
-const ajpost = (url, data) => {
-  return http({
-    url,
-    method: 'post',
-    data,
-    header: access
-  })
-}
-
-const ajput = (url, data) => {
-  return http({
-    url,
-    method: 'put',
-    data,
-    header: access
-  })
-}
-
-const ajdel = (url, data) => {
-  return http({
-    url,
-    method: 'delete',
-    data,
-    header: access
-  })
-}
-
 //register
-const register = {
-  register_token: app.globalData.register_token,
-  kaptcha: app.globalData.kaptcha
-}
-
-const regpost = (url, data) => {
+const register = (url, data) => {
   return http({
     url,
     method: 'post',
     data,
-    register
+    header: {
+      register_token: app.globalData.register_token,
+      kaptcha: app.globalData.kaptcha
+    }
   })
 }
-
 
 const getURL = (url) => {
   return config.host + url;
 }
 
+/**
+ * 验证请求返回function：这里根据你后台的返回结果bean 进行处理
+ */
+var resHandler = (res, callBackFun) => {
+  if (res.data) {
+    // if (res.data.ret == 1) {
+    //   callBackFun(res.data.data);
+    //   return;
+    // }
+    callBackFun(res.data);
+    return;
+  }
+  wx.showToast({
+    title: '请求错误，请重试',
+    icon: 'none',
+    duration: 2000
+  })
+}
+
+/**
+ * 合并属性
+ */
 const extend = (target, source) => {
   for (var obj in source) {
     target[obj] = source[obj];
@@ -205,19 +130,8 @@ module.exports = {
   post: post,
   del: del,
   put: put,
-  //xxxform
-  xget: xget,
-  xpost: xpost,
-  xput: xput,
-  //access xxx-form
-  axget: axget,
-  axpost: axpost,
-  axput: axput,
-  //access json
-  ajget: ajget,
-  ajpost: ajpost,
-  ajdel: ajdel,
-  ajput: ajput,
   //register 
-  regpost: regpost
+  register: register,
+  //resHandler
+  resHandler: resHandler
 }
